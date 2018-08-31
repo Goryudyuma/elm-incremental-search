@@ -1,8 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, Attribute, program, h1, text, div, input, ul, li, strong)
-import Html.Attributes exposing (placeholder, value)
-import Html.Events exposing (onInput)
+import Html exposing (Html, Attribute, program, h1, h2, text, div, input, ul, li, strong, p, label, a, b)
+import Html.Attributes exposing (placeholder, value, type_, name, checked)
+import Html.Events exposing (onInput, onClick)
 
 
 ---- MODEL ----
@@ -11,12 +11,16 @@ import Html.Events exposing (onInput)
 {-| TODO
 -}
 type alias Model =
-    ()
+    {s:String, searchType:SearchType}
 
+type SearchType
+  = Starts
+  | Ends
+  | Partial
 
 init : ( Model, Cmd Msg )
 init =
-    ( (), Cmd.none )
+    ( {s="", searchType=Partial}, Cmd.none )
 
 
 
@@ -26,14 +30,17 @@ init =
 {-| TODO
 -}
 type Msg
-    = NoOp
+    = Search String
+    | ChangeSearchType SearchType
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        Search s ->
+            ( {model | s=s} , Cmd.none )
+        ChangeSearchType searchType ->
+            ( {model | searchType=searchType} , Cmd.none )
 
 
 
@@ -42,16 +49,38 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    let
+      searchInWords =
+        List.filter (searchInWordsInFilter model.s) words
+      searchInWordsInFilter =
+        case model.searchType of
+          Starts ->
+            String.startsWith
+          Ends ->
+            String.endsWith
+          Partial ->
+            String.contains
+      wordsToList =
+        li []
+      wordsToBold word =
+        String.split model.s word
+        |> List.map text
+        |> List.intersperse (b[][text model.s])
+    in
+      div []
         [ h1 [] [ text "Incremental Search" ]
-        , input [ placeholder "Search..." ] []
+        , input [ placeholder "Search..." , onInput Search] []
 
         -- empty list pattern -> ul [ class "empty" ] []
+        , h2 [] [ text (searchInWords |> List.length |> toString)]
         , ul []
-            [ li [] [ text "foo" ]
-            , li [] [ text "bar" ]
-            , li [] [ text "hoge" ]
-            ]
+            (List.map wordsToBold searchInWords |> List.map wordsToList)
+        , p [][
+          label[] [
+            input[type_ "radio", name "searchType", onClick (ChangeSearchType Partial), checked True ][], text "Partial",
+            input[type_ "radio", name "searchType", onClick (ChangeSearchType Starts) ][], text "Starts",
+            input[type_ "radio", name "searchType", onClick (ChangeSearchType Ends) ][], text "Ends"
+          ]]
         ]
 
 
