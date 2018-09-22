@@ -1,6 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html, Attribute, program, h1, h2, text, div, input, ul, li, strong, p, label, a, b)
+import Browser
+import Html exposing (Html, Attribute, h1, h2, text, div, input, ul, li, strong, p, label, a, b)
 import Html.Attributes exposing (placeholder, value, type_, name, checked)
 import Html.Events exposing (onInput, onClick)
 
@@ -18,8 +19,8 @@ type SearchType
   | Ends
   | Partial
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( {s="", searchType=Partial}, Cmd.none )
 
 
@@ -72,7 +73,7 @@ view model =
         , input [ placeholder "Search..." , onInput Search] []
 
         -- empty list pattern -> ul [ class "empty" ] []
-        , h2 [] [ text (searchInWords |> List.length |> toString)]
+        , h2 [] [ text (searchInWords |> List.length |> String.fromInt)]
         , ul []
             (List.map wordsToBold searchInWords |> List.map wordsToList)
         , p [][
@@ -88,9 +89,9 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { view = view
         , init = init
         , update = update
